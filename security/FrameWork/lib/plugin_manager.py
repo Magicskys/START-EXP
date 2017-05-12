@@ -127,3 +127,6 @@ class PluginManager(object):
     def clear_vulns(self):
         self.cu.execute("delete from vulns")
         self.conn.commit()
+
+    def crwal(self):
+        pass
