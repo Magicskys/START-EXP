@@ -2,6 +2,9 @@
 from os import walk
 import sqlite3
 from imp import load_module,find_module
+import requests
+from lxml import etree
+import gevent
 
 class PluginManager(object):
 
@@ -73,13 +76,13 @@ class PluginManager(object):
             self.plugins[plugin]["exploit"] = module.exploit
         self.current_plugin = plugin
 
-    def options(self):
+    def options_show(self):
         return self.plugins[self.current_plugin]["options"]
 
-    def options_show(self,option,value):
+    def option_set(self,option,value):
         for op in self.plugins[self.current_plugin]['options']:
             if op["Name"]==option:
-                op["Current_Setting"]=value
+                op["Current Setting"]=value
                 return "%s => %s"%(op["Name"],value)
             else:
                 return "无效的配置: %s"%option
@@ -88,7 +91,7 @@ class PluginManager(object):
         options={}
         for option in self.plugins[self.current_plugin]["options"]:
             name=option["Name"]
-            current_setting=option["Current_Setting"]
+            current_setting=option["Current Setting"]
             required=option['Required']
             if required and not current_setting:
                 return "%s is required!"%name
@@ -108,7 +111,7 @@ class PluginManager(object):
                 else:
                     options[name]=current_setting
         try:
-            vuln=self.plugins[self.current_plugin]["exploit"](**options)
+            vuln = self.plugins[self.current_plugin]["exploit"](**options)
             if vuln:
                 self.cu.execute("insert into vulns values (?, ?)",(self.current_plugin, vuln))
                 self.conn.commit()
@@ -118,7 +121,10 @@ class PluginManager(object):
         except sqlite3.ProgrammingError:
             return True, vuln
         except Exception, e:
+            print e
             return False, "%s: %s" % (self.current_plugin, e.message)
+
+
 
     def show_vulns(self):
         self.cu.execute("select title, vuln from vulns")
@@ -128,5 +134,22 @@ class PluginManager(object):
         self.cu.execute("delete from vulns")
         self.conn.commit()
 
-    def crwal(self):
-        pass
+    def crawl(self,key,page):
+        for option in self.plugins[self.current_plugin]["options"]:
+            if option["Current Setting"]!="":
+                try:
+                    url = "https://www.baidu.com/s?wd=" + str(key) + "&pn="+str(page)
+                    jobs = []
+                    headers = {
+                        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'}
+                    html = requests.get(url=url, headers=headers).content
+                    sel = etree.HTML(html)
+                    links = sel.xpath('//h3/a/@href')
+                    for link in links:
+                        self.option_set("URL", requests.get(url=link,headers=headers).url)
+                        jobs.append(gevent.spawn(self.plugin_exec))
+                    gevent.joinall(jobs)
+                except requests.HTTPError ,e:
+                    return False, "%s" % (e.message)
+            else:
+                return "无效的配置"

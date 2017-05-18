@@ -4,7 +4,7 @@ import sys,urllib2
 
 author = ""
 scope = "Struts 2.3.5 - Struts 2.3.31, Struts 2.5 - Struts 2.5.10"
-description = "Struts2 远程代码执行漏洞"
+description = "struts2_045"
 reference = "cve-2017-5638"
 options = [
     {

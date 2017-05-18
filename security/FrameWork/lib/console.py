@@ -23,6 +23,7 @@ class Interface(cmd.Cmd,PluginManager):
             'info':"显示插件信息",
             'values':'漏洞',
             'exploit':'执行',
+            'crawl':'批量自动化',
             'exit':'退出'
         }
 
@@ -116,15 +117,33 @@ class Interface(cmd.Cmd,PluginManager):
             if isinstance(rn,str):
                 logger.error(rn)
             else:
-                print "\n\t%-20s%-28s%-10s%s" % ("名字", "目前配置",
+                print "\n%-20s%-28s%-10s%s" % ("名字", "目前配置",
                                                  "必须", "描述")
-                print "\t%-20s%-20s%-10s%s" % ("----", "---------------",
+                print "%-20s%-20s%-10s%s" % ("----", "---------------",
                                                "--------", "-----------")
                 for option in rn:
-                    print "\t%-20s%-20s%-10s%s" % (option["Name"],
+                    print "%-20s%-20s%-10s%s" % (option["Name"],
                                                    option["Current Setting"],
                                                    option["Required"],
                                                    option["Description"])
+                print
+        else:
+            logger.error("获取一个插件")
+
+    def do_set(self, arg):
+        if self.current_plugin:
+            if len(arg.split()) == 2:
+                option = arg.split()[0]
+                value = arg.split()[1]
+                rn = self.option_set(option.upper(), value)
+                if rn.startswith("错误选项:"):
+                    logger.error(rn)
+                else:
+                    print rn
+            else:
+                logger.error("set <option> <value>")
+        else:
+            logger.error("获取一个插件")
 
 
     def do_init_db(self,line):
@@ -155,7 +174,7 @@ class Interface(cmd.Cmd,PluginManager):
             if not rn[0]:
                 logger.error(rn[1])
         else:
-            logger.error("获取第一个插件")
+            logger.error("获取一个插件")
 
     def default(self,line):
         logger.error("找不到命令: %s"%line)
@@ -170,3 +189,18 @@ class Interface(cmd.Cmd,PluginManager):
 
     def emptyline(self):
         pass
+
+    def do_crawl(self,arg):
+        if self.current_plugin:
+            if len(arg.split()) == 2:
+                url = arg.split()[0]
+                page = arg.split()[1]
+                rn = self.crawl(url, page)
+                if rn.startswith("错误选项:"):
+                    logger.error(rn)
+                else:
+                    print rn
+            else:
+                logger.error("crawl <url> <page>")
+        else:
+            logger.error("获取一个插件")

